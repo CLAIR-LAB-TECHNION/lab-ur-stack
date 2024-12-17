@@ -1,25 +1,26 @@
-import time
+import random
 
 import typer
-from motion_planning.motion_planner import MotionPlanner
-from motion_planning.geometry_and_transforms import GeometryAndTransforms
-from manipulation.manipulation_controller import ManipulationController
-from robot_inteface.robots_metadata import ur5e_1, ur5e_2
+from lab_ur_stack.manipulation.manipulation_controller import ManipulationController
+from lab_ur_stack.robot_inteface.robots_metadata import ur5e_2
+from lab_ur_stack.utils.workspace_utils import workspace_x_lims_default, workspace_y_lims_default
 
 
 app = typer.Typer()
 
-point1 = [-0.54105, -0.95301]
-point2 = [-0.64105, -0.95301]
-point3 = [-0.59105, -0.95301]
-points = [point1, point2, point3]
+# add all corners of the workspace
+points = [[workspace_x_lims_default[0], workspace_y_lims_default[0]],
+            [workspace_x_lims_default[0], workspace_y_lims_default[1]],
+            [workspace_x_lims_default[1], workspace_y_lims_default[0]],
+            [workspace_x_lims_default[1], workspace_y_lims_default[1]]]
+
 
 @app.command(
     context_settings={"ignore_unknown_options": True})
 def main(repeat: int = 1):
     controller = ManipulationController.build_from_robot_name_and_ip(ur5e_2["ip"], ur5e_2["name"])
-    controller.move_home()
-
+    # controller.moveL_relative([0, 0, 0.1], speed=0.5, acceleration=0.5)
+    controller.plan_and_move_home()
     for point in points:
         heights = []
         print("---tilted:")
@@ -33,18 +34,16 @@ def main(repeat: int = 1):
         print("measured heights:", heights)
         print("mean:", mean, "variance:", variance)
 
-        # print("-----------------------------")
-        # print("---not tilted:")
-        # heights = []
-        # for i in range(5):
-        #     h = controller.sense_height(x, y)
-        #     heights.append(h)
-        #
-        # mean = sum(heights) / len(heights)
-        # variance = sum((h - mean) ** 2 for h in heights) / len(heights)
-        # print("measured heights:", heights)
-        # print("mean:", mean, "variance:", variance)
+    # try 20 more points in the workspace:
+    for _ in range(100):
+        point = [random.uniform(workspace_x_lims_default[0], workspace_x_lims_default[1]),
+                 random.uniform(workspace_y_lims_default[0], workspace_y_lims_default[1])]
+        for i in range(repeat):
+            print("trying to sense height at:", point)
+            h = controller.sense_height_tilted(point[0], point[1])
+            print("measured height:", h)
 
+    print("finished sensing heights")
 
 if __name__ == "__main__":
     app()

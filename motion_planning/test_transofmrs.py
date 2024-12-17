@@ -1,7 +1,7 @@
 import numpy as np
 
-from motion_planning.motion_planner import MotionPlanner
-from motion_planning.transforms import GeometryAndTransforms
+from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
+from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
 
 
 def test_world_transforms():

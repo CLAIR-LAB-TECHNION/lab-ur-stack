@@ -12,13 +12,13 @@ default_classes = (
 )
 
 class ObjectDetection:
-    def __init__(self, classes=default_classes, min_confidence=0.02):
+    def __init__(self, classes=default_classes, min_confidence=0.1):
         self.min_confidence = min_confidence
 
         self.yolo = YOLOWorld('yolov8x-worldv2')  # largest model
         self.yolo.set_classes(classes)
 
-    def detect_objects(self, im_arr, is_rgb=True):
+    def detect_objects(self, im_arr, is_rgb=True, max_detections=5):
         '''
 
         :param im_arr: b x w x h x 3 numpy array
@@ -30,7 +30,7 @@ class ObjectDetection:
             for i in range(len(im_arr)):
                 im_arr[i] = cv2.cvtColor(im_arr[i], cv2.COLOR_RGB2BGR)
 
-        results = self.yolo.predict(im_arr, conf=self.min_confidence, agnostic_nms=True)
+        results = self.yolo.predict(im_arr, conf=self.min_confidence, agnostic_nms=True, max_det=max_detections)
 
         bbox_list = []
         confidence_list = []

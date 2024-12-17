@@ -1,8 +1,8 @@
 import json
-from motion_planning.geometry_and_transforms import GeometryAndTransforms
+from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
 import numpy as np
 import matplotlib.pyplot as plt
-from vision.image_block_position_estimator import ImageBlockPositionEstimator
+from lab_ur_stack.vision.image_block_position_estimator import ImageBlockPositionEstimator
 
 
 def load_data():

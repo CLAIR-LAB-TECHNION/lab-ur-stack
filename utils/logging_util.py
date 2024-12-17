@@ -18,7 +18,7 @@ def setup_logging(log_dir="logs"):
     script_name = os.path.basename(sys.argv[0]).replace(".py", "")
 
     # Define the log file name with the script name and current date and time
-    log_file = os.path.join(log_dir, f"{script_name}_{datetime.now().strftime('t%H-%M-%S_d%Y-%m-%d')}.log")
+    log_file = os.path.join(log_dir, f"{script_name}_{datetime.now().strftime('d%Y-%m-%d_t%H-%M-%S')}.log")
 
     # Configure logging
     logging.basicConfig(

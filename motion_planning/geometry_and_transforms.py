@@ -7,14 +7,16 @@ from klampt.math import se3, so3
 import numpy as np
 from numpy import pi
 from scipy.spatial.transform import Rotation as R
-from camera.configurations_and_params import camera_in_ee
-from motion_planning.motion_planner import MotionPlanner
+from lab_ur_stack.camera.configurations_and_params import camera_in_ee
+from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
+from lab_ur_stack.motion_planning.abstract_motion_planner import AbstractMotionPlanner
 
 
 class GeometryAndTransforms:
-    def __init__(self, motion_planner: MotionPlanner):
+    def __init__(self, motion_planner: AbstractMotionPlanner, cam_in_ee=camera_in_ee):
         self.motion_planner = motion_planner
         self.robot_name_mapping = motion_planner.robot_name_mapping
+        self.camera_in_ee = cam_in_ee
 
     @classmethod
     def from_motion_planner(cls, motion_planner):
@@ -60,7 +62,7 @@ class GeometryAndTransforms:
         """
         # we assume camera is z forward, x right, y down (like in the image). this is already the ee frame orientation,
         # so we just need to translate it
-        return se3.from_translation(np.array(camera_in_ee))
+        return se3.from_translation(np.array(self.camera_in_ee))
 
     def ee_to_camera_transform(self, ):
         """
@@ -68,7 +70,7 @@ class GeometryAndTransforms:
         """
         # we assume camera is z forward, x right, y down (like in the image). this is already the ee frame orientation,
         # so we just need to translate it
-        return se3.from_translation(-np.array(camera_in_ee))
+        return se3.from_translation(-np.array(self.camera_in_ee))
 
     def world_to_camera_transform(self, robot_name, config):
         """
@@ -120,7 +122,13 @@ class GeometryAndTransforms:
         """
         point_robot = self.point_world_to_robot(robot_name, point_world)
 
-        rotation_euler = R.from_euler('xyz', [1.2 * pi, 0.15*pi, 0])
+        # rotation of ee around z depends on proximity to the robot base. Too close to the
+        # base requires 0 so the robot won't collide with itself, but with 180 it can reach further
+        # these numbers are only correct for ur5e_2 in our setting:
+        rz = 0 if -0.4 < point_robot[1] < 0.4 else pi
+
+        rotation_euler = R.from_euler('xyz', [-0.8 * pi, 0.15*pi, rz])
+
         r = rotation_euler.as_rotvec(degrees=False)
 
         return np.concatenate([point_robot, r])

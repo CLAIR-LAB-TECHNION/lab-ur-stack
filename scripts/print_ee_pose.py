@@ -1,8 +1,7 @@
-from typing import List
 import typer
-from robot_inteface.robot_interface import RobotInterface
-from robot_inteface.robots_metadata import ur5e_1, ur5e_2
-from motion_planning.geometry_and_transforms import GeometryAndTransforms
+from lab_ur_stack.robot_inteface.robot_interface import RobotInterface
+from lab_ur_stack.robot_inteface.robots_metadata import ur5e_1, ur5e_2
+from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
 
 
 app = typer.Typer()

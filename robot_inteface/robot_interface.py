@@ -1,7 +1,6 @@
 from rtde_control import RTDEControlInterface as rtdectrl
 from rtde_receive import RTDEReceiveInterface as rtdercv
-from rtde_io import RTDEIOInterface as rtdeio
-from robot_inteface.twofg7_gripper import TwoFG7
+from lab_ur_stack.robot_inteface.twofg7_gripper import TwoFG7
 from numpy import pi
 import time
 import logging
@@ -44,6 +43,10 @@ class RobotInterfaceWithGripper(RobotInterface):
         super().__init__(robot_ip, freq)
         self.gripper = TwoFG7(robot_ip, gripper_id)
 
+        self.min_width = self.gripper.twofg_get_min_external_width()
+        self.max_width = self.gripper.twofg_get_max_external_width()
+
+
     def set_gripper(self, width, force, speed, wait_time=0.5):
         logging.debug(f"Setting gripper ({self._ip}), width: {width}, force: {force}, speed: {speed}")
         res = self.gripper.twofg_grip_external(width, force, speed)
@@ -52,17 +55,18 @@ class RobotInterfaceWithGripper(RobotInterface):
         time.sleep(wait_time)
 
     def grasp(self, wait_time=0.5):
-        min_width = self.gripper.twofg_get_min_external_width()
-        logging.debug(f"Grasping ({self._ip}), min_width: {min_width}")
-        res = self.gripper.twofg_grip_external(min_width, 20, 100)
+        logging.debug(f"Grasping ({self._ip}), min_width: {self.min_width}")
+        res = self.gripper.twofg_grip_external(self.min_width, 20, 100)
         if res != 0:
             logging.warning(f"Failed to grasp ({self._ip})")
         time.sleep(wait_time)
 
     def release_grasp(self, wait_time=0.5):
-        max_width = self.gripper.twofg_get_max_external_width()
-        logging.debug(f"Releasing grasp ({self._ip}), max_width: {max_width}")
-        res = self.gripper.twofg_grip_external(max_width, 20, 100)
+        logging.debug(f"Releasing grasp ({self._ip}), max_width: {self.max_width}")
+        res = self.gripper.twofg_grip_external(self.max_width, 20, 100)
         if res != 0:
             logging.warning(f"Failed to release grasp ({self._ip})")
         time.sleep(wait_time)
+
+    def is_object_gripped(self):
+        return self.gripper.twofg_get_grip_detected()

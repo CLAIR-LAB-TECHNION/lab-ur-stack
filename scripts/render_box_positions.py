@@ -3,7 +3,7 @@ import json
 import numpy as np
 from matplotlib import pyplot as plt
 
-from vision.state_renderer import PyrenderRenderer
+from lab_ur_stack.vision.state_renderer import PyrenderRenderer
 
 
 def load_data():

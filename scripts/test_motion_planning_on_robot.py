@@ -1,10 +1,8 @@
-from robot_inteface.robot_interface import RobotInterfaceWithGripper, home_config
-import numpy
-from numpy import pi
+from lab_ur_stack.robot_inteface.robot_interface import RobotInterfaceWithGripper
 import time
-from motion_planning.motion_planner import MotionPlanner
-from motion_planning.geometry_and_transforms import GeometryAndTransforms
-from robot_inteface.robots_metadata import ur5e_1, ur5e_2
+from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
+from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
+from lab_ur_stack.robot_inteface.robots_metadata import ur5e_1, ur5e_2
 
 target_position_world_rob1 = [-0.3, -0.5, 0.25]
 target_position_world_rob2 = [-0.4, -0.7, 0.25]

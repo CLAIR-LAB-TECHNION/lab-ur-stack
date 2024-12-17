@@ -1,4 +1,4 @@
-from robot_inteface.robot_interface import RobotInterfaceWithGripper, home_config
+from lab_ur_stack.robot_inteface.robot_interface import RobotInterfaceWithGripper, home_config
 import numpy
 from numpy import pi
 import time

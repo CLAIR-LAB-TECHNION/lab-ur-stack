@@ -1,4 +1,4 @@
-from camera.realsense_camera import RealsenseCamera
+from lab_ur_stack.camera.realsense_camera import RealsenseCamera
 import numpy as np
 import cv2
 

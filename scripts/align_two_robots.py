@@ -1,9 +1,8 @@
-from typing import List
 import typer
-from motion_planning.motion_planner import MotionPlanner
-from motion_planning.geometry_and_transforms import GeometryAndTransforms
-from manipulation.manipulation_controller import ManipulationController
-from robot_inteface.robots_metadata import ur5e_1, ur5e_2
+from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
+from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
+from lab_ur_stack.manipulation.manipulation_controller import ManipulationController
+from lab_ur_stack.robot_inteface.robots_metadata import ur5e_1, ur5e_2
 
 
 app = typer.Typer()
