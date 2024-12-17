@@ -1,9 +1,9 @@
 import random
 
 import typer
-from lab_ur_stack.manipulation.manipulation_controller import ManipulationController
-from lab_ur_stack.robot_inteface.robots_metadata import ur5e_2
-from lab_ur_stack.utils.workspace_utils import workspace_x_lims_default, workspace_y_lims_default
+from manipulation.manipulation_controller import ManipulationController
+from robot_inteface.robots_metadata import ur5e_2
+from utils.workspace_utils import workspace_x_lims_default, workspace_y_lims_default
 
 
 app = typer.Typer()

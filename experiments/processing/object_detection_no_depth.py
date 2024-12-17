@@ -1,9 +1,9 @@
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
 import numpy as np
 import matplotlib.pyplot as plt
-from lab_ur_stack.vision.image_block_position_estimator import ImageBlockPositionEstimator
+from vision.image_block_position_estimator import ImageBlockPositionEstimator
 
-from lab_ur_stack.experiments.processing.object_detection_cropped_images import load_data, compute_prediction_error
+from experiments.processing.object_detection_cropped_images import load_data, compute_prediction_error
 
 
 if __name__ == "__main__":

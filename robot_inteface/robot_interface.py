@@ -1,6 +1,6 @@
 from rtde_control import RTDEControlInterface as rtdectrl
 from rtde_receive import RTDEReceiveInterface as rtdercv
-from lab_ur_stack.robot_inteface.twofg7_gripper import TwoFG7
+from robot_inteface.twofg7_gripper import TwoFG7
 from numpy import pi
 import time
 import logging

@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 
 import cv2
-from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
-from lab_ur_stack.manipulation.manipulation_controller import ManipulationController
-from lab_ur_stack.robot_inteface.robots_metadata import ur5e_1
-from lab_ur_stack.camera.realsense_camera import RealsenseCamera
+from motion_planning.motion_planner import MotionPlanner
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
+from manipulation.manipulation_controller import ManipulationController
+from robot_inteface.robots_metadata import ur5e_1
+from camera.realsense_camera import RealsenseCamera
 
 if __name__ == "__main__":
     camera = RealsenseCamera()
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         point_camera = gt.point_world_to_camera(point_world, "ur5e_1", r1_controller.getActualQ(), r1_controller)
         print("point_camera:", point_camera)
 
-        from lab_ur_stack.camera.configurations_and_params import color_camera_intrinsic_matrix
+        from camera.configurations_and_params import color_camera_intrinsic_matrix
 
         point_image_homogenous = color_camera_intrinsic_matrix @ point_camera
         point_image = point_image_homogenous / point_image_homogenous[2]

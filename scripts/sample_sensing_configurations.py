@@ -1,11 +1,11 @@
 import typer
-from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
+from motion_planning.motion_planner import MotionPlanner
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
 from klampt.math import se3
 from klampt import vis
 import time
 
-from lab_ur_stack.vision.utils import lookat_verangle_distance_to_camera_transform
+from vision.utils import lookat_verangle_distance_to_camera_transform
 
 app = typer.Typer()
 

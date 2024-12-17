@@ -1,8 +1,8 @@
 import numpy as np
-from lab_ur_stack.robot_inteface.robot_interface import RobotInterfaceWithGripper, home_config
-from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
-from lab_ur_stack.utils import logging_util
+from robot_inteface.robot_interface import RobotInterfaceWithGripper, home_config
+from motion_planning.motion_planner import MotionPlanner
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
+from utils import logging_util
 import time
 import logging
 import chime

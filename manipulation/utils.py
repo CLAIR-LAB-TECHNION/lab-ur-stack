@@ -1,7 +1,7 @@
-from lab_ur_stack.utils.workspace_utils import (sample_block_positions_uniform, stack_position_r2frame,
+from utils.workspace_utils import (sample_block_positions_uniform, stack_position_r2frame,
                                                 workspace_x_lims_default, workspace_y_lims_default,
                                                 sample_block_positions_from_dists)
-from lab_ur_stack.manipulation.manipulation_controller import ManipulationController
+from manipulation.manipulation_controller import ManipulationController
 import numpy as np
 
 

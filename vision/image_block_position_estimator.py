@@ -1,11 +1,11 @@
 import cv2
 
-from lab_ur_stack.vision.utils import crop_workspace
-from lab_ur_stack.vision.object_detection import ObjectDetection
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
+from vision.utils import crop_workspace
+from vision.object_detection import ObjectDetection
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
 import numpy as np
-from lab_ur_stack.camera.realsense_camera import project_color_pixel_to_depth_pixel
-from lab_ur_stack.camera.configurations_and_params import color_camera_intrinsic_matrix
+from camera.realsense_camera import project_color_pixel_to_depth_pixel
+from camera.configurations_and_params import color_camera_intrinsic_matrix
 
 
 class ImageBlockPositionEstimator:

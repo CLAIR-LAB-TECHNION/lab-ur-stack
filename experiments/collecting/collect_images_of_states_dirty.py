@@ -3,15 +3,15 @@ import os
 import cv2
 import numpy as np
 import typer
-from lab_ur_stack.motion_planning.motion_planner import MotionPlanner
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
-from lab_ur_stack.manipulation.manipulation_controller import ManipulationController
-from lab_ur_stack.robot_inteface.robots_metadata import ur5e_1, ur5e_2
-from lab_ur_stack.camera.realsense_camera import RealsenseCamera
+from motion_planning.motion_planner import MotionPlanner
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
+from manipulation.manipulation_controller import ManipulationController
+from robot_inteface.robots_metadata import ur5e_1, ur5e_2
+from camera.realsense_camera import RealsenseCamera
 import time
 from PIL import Image
-from lab_ur_stack.manipulation.utils import ur5e_2_distribute_blocks_in_workspace_uniform, ur5e_2_collect_blocks_from_positions
-from lab_ur_stack.utils.workspace_utils import stack_position_r2frame, workspace_x_lims_default, \
+from manipulation.utils import ur5e_2_distribute_blocks_in_workspace_uniform, ur5e_2_collect_blocks_from_positions
+from utils.workspace_utils import stack_position_r2frame, workspace_x_lims_default, \
     workspace_y_lims_default
 
 sensing_configs = [[-2.04893, -2.50817, -0.00758, -1.96019, 1.51035, 1.0796],

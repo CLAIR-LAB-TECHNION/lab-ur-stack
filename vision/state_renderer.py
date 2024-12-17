@@ -1,8 +1,8 @@
 import numpy as np
 import pyrender
 import trimesh
-from lab_ur_stack.motion_planning.geometry_and_transforms import GeometryAndTransforms
-from lab_ur_stack.camera.configurations_and_params import color_fx, color_fy, color_ppx, color_ppy
+from motion_planning.geometry_and_transforms import GeometryAndTransforms
+from camera.configurations_and_params import color_fx, color_fy, color_ppx, color_ppy
 
 
 class PyrenderRenderer:
