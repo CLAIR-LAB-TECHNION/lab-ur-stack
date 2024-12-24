@@ -22,20 +22,21 @@ def distribute_blocks_in_positions(block_positions,
                                    robot_controller: ManipulationController,
                                    stack_position=stack_position_r2frame,
                                    is_stack_position_in_ur5e_2_frame=True,
-                                   start_height=None):
+                                   start_height_pick_up=None,
+                                   start_height_put_down=0.1):
     """
     distribute blocks from stack positions to given positions
     """
     stack_position_world = robot_controller.gt.point_robot_to_world(robot_controller.robot_name,
                                                                     [*stack_position, 0.])
 
-    if start_height is None:
-        start_height = 0.1 + 0.04 * len(block_positions)
+    if start_height_pick_up is None:
+        start_height_pick_up = 0.1 + 0.04 * len(block_positions)
     for block_pos in block_positions:
         robot_controller.pick_up(stack_position_world[0], stack_position_world[1], rz=np.pi/2,
-                                 start_height=start_height)
-        robot_controller.put_down(block_pos[0], block_pos[1], rz=0, start_height=0.15)
-        start_height -= 0.04
+                                 start_height=start_height_pick_up)
+        robot_controller.put_down(block_pos[0], block_pos[1], rz=0, start_height=start_height_put_down)
+        start_height_pick_up -= 0.04
 
 
 def ur5e_2_distribute_blocks_in_workspace_uniform(n_blocks,
