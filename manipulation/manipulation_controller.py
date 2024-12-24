@@ -63,6 +63,8 @@ class ManipulationController(RobotInterfaceWithGripper):
         motion_palnner.visualize()
         time.sleep(0.2)
 
+        self.last_planned_path = None
+
         chime.theme('pokemon')
 
     @classmethod
@@ -142,8 +144,10 @@ class ManipulationController(RobotInterfaceWithGripper):
         path = self.motion_planner.plan_from_start_to_goal_config(self.robot_name,
                                                                   start_config,
                                                                   q,
-                                                                  max_time=8,
+                                                                  max_time=20,
                                                                   max_length_to_distance_ratio=2)
+
+        self.last_planned_path = path
 
         if path is None:
             logging.error(f"{self.robot_name} Could not find a path")
