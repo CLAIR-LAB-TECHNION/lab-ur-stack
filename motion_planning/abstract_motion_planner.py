@@ -3,7 +3,6 @@ import sys
 import time
 from abc import abstractmethod
 from unittest import skipIf
-
 from frozendict import frozendict
 import numpy as np
 from numpy import pi
