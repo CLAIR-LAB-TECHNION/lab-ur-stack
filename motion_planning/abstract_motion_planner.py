@@ -72,7 +72,21 @@ class AbstractMotionPlanner:
 
     def visualize(self, backend=None, window_name=None):
         """
-        open visualization window
+        Initializes and visualizes the motion planning environment using the specified rendering backend and optional window name.
+
+        Parameters:
+        - backend: Optional. The rendering backend to use for visualization. Defaults to "GLUT" on Linux systems or "PyQt5"/"GLUT" on others depending on availability.
+        - window_name: Optional. Name of the visualization window. If provided, it will be set as the created window's name.
+
+        Behavior:
+        - The function checks if visualization has already been initialized and exits if true.
+        - Determines the visualization backend based on the system platform and availability.
+        - Initializes the visualization environment with the specified or default backend.
+        - Adds the motion planning world to the visualization environment.
+        - Sets colors for specific elements in the visualization environment.
+        - Configures the camera's position, rotation, and distance for optimal viewing.
+        - Displays the visualization and pauses briefly to ensure rendering is shown.
+        - Marks the visualization as initialized to prevent re-initialization in subsequent calls.
         """
         if AbstractMotionPlanner.vis_initialized:
             return
@@ -104,11 +118,19 @@ class AbstractMotionPlanner:
 
     def vis_config(self, robot_name, config_, vis_name="robot_config", rgba=(0, 0, 1, 0.5)):
         """
-        Show visualization of the robot in a config
-        :param robot_name:
-        :param config_:
-        :param rgba: color and transparency
-        :return:
+        Creates and visualizes a robot configuration in Klampt's visualization module.
+
+        Parameters:
+        robot_name (str): The name of the robot for which the configuration will be visualized.
+        config_ (list): The robot configuration to be visualized. If the configuration length is 6, it will be converted using the config6d_to_klampt method.
+        vis_name (str, optional): The name identifier for the visualization element. Defaults to "robot_config".
+        rgba (tuple, optional): The color and transparency for the visualization in RGBA format. Defaults to (0, 0, 1, 0.5).
+
+        Behavior:
+        - If the configuration length is 6, it converts the configuration to Klampt's format using config6d_to_klampt.
+        - Modifies the configuration into a list of length 1 to work around a visualization limitation.
+        - Adds the visual representation of the configuration using Klampt's vis module.
+        - Sets the color and attributes for the visualization element.
         """
         config = config_.copy()
         if len(config) == 6:
@@ -121,7 +143,20 @@ class AbstractMotionPlanner:
 
     def vis_path(self, robot_name, path_):
         """
-        show the path in the visualization
+        Visualizes a robot's planned trajectory path in the Klamp't visualization environment.
+
+        Parameters:
+        robot_name (str): The name of the robot whose path is to be visualized.
+        path_ (list): A list of configurations representing the trajectory path, where each configuration can either be in 6D or another form suitable for conversion.
+
+        Behavior:
+        1. If the configurations in the input path have six elements, they are converted using the 'config6d_to_klampt' function.
+        2. Retrieves the robot instance associated with the given robot_name from the `robot_name_mapping`.
+        3. Sets the robot's configuration to the initial configuration of the path.
+        4. Displays the trajectory in the Klamp't visualization environment with appropriate attributes:
+           - Adds the path as a visual element.
+           - Sets the path color to white with partial transparency.
+           - Associates the path with the specified robot name.
         """
         path = path_.copy()
         if len(path[0]) == 6:
@@ -137,12 +172,29 @@ class AbstractMotionPlanner:
         vis.setAttribute("path", "robot", robot_name)
 
     def show_point_vis(self, point, name="point"):
+        """
+        Displays a 3D point in the visualizer with a given name and specific color properties.
+
+        Parameters:
+        point: The 3D point to be displayed in the visualization.
+        name: Optional; The identifier for the point in the visualizer. Default is "point".
+
+        The point is added to the visualizer and its color is set to red with partial transparency.
+        """
         vis.add(name, point)
         vis.setColor(name, 1, 0, 0, 0.5)
 
     def show_ee_poses_vis(self):
         """
-        show the end effector poses of all robots in the
+        Displays the end-effector poses of all robots in the visualization.
+
+        For each robot in the robot name mapping, retrieves the end-effector (EE) transform using the "ee_link" and adds it to the visualization with a unique identifier.
+
+        Parameters:
+        None
+
+        Returns:
+        None
         """
         for robot in self.robot_name_mapping.values():
             ee_transform = robot.link("ee_link").getTransform()
@@ -157,7 +209,20 @@ class AbstractMotionPlanner:
     def plan_from_start_to_goal_config(self, robot_name: str, start_config, goal_config, max_time=15,
                                        max_length_to_distance_ratio=10):
         """
-        plan from a start and a goal that are given in 6d configuration space
+        Plans a path for a robot from a specified start configuration to a goal configuration.
+
+        Parameters:
+        robot_name: The name of the robot for which the planning needs to be executed.
+        start_config: The starting configuration of the robot. It could either be a 6D representation or a Klampt configuration.
+        goal_config: The target configuration of the robot. It could either be a 6D representation or a Klampt configuration.
+        max_time: The maximum allowable time for the planning process, default is 15 seconds.
+        max_length_to_distance_ratio: The maximum allowable ratio of path length to the direct distance, default is 10.
+
+        Returns:
+        The planned path from start to goal configuration in 6D representation.
+
+        Notes:
+        If start_config or goal_config is in 6D, it will be automatically converted to Klampt configuration for planning.
         """
         if len(start_config) == 6 and len(goal_config) == 6:
             start_config = self.config6d_to_klampt(start_config)
@@ -172,7 +237,21 @@ class AbstractMotionPlanner:
     def _plan_from_start_to_goal_config_klampt(self, robot, start_config, goal_config, max_time=15,
                                                max_length_to_distance_ratio=10):
         """
-        plan from a start and a goal that are given in klampt 8d configuration space
+        Plans a path for a robot to move from a start configuration to a goal configuration using the Klampt library.
+
+        Parameters:
+        robot : The robot for which the path is being planned. The robot's configuration will be updated to the start configuration before planning.
+        start_config : The initial configuration of the robot.
+        goal_config : The target configuration the robot should reach.
+        max_time : Maximum time allowed for the path planning process (default is 15 seconds).
+        max_length_to_distance_ratio : Maximum ratio of the path length to the direct distance between the start and goal configurations (default is 10).
+
+        Returns:
+        list : A list of configurations representing the planned path from the start configuration to the goal configuration. If a direct path is possible, the list will contain only the goal configuration.
+
+        Notes:
+        - A direct path check is performed before planning. If the direct path is feasible, planning is skipped, and the method returns the goal configuration as the path.
+        - If a direct path is not possible, the method performs path planning based on the specified settings and parameters.
         """
         robot.setConfig(start_config)
 
