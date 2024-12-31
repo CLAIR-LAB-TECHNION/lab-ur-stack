@@ -1,6 +1,8 @@
+import math
 import sys
 import time
 from abc import abstractmethod
+from unittest import skipIf
 
 from frozendict import frozendict
 import numpy as np
@@ -15,10 +17,14 @@ from klampt.math import se3, so3
 from klampt.model import collide
 import os
 
+from sympy.codegen.ast import continue_
+from trimesh.path.packing import visualize
+
+
 
 class AbstractMotionPlanner:
     default_attachments = frozendict(ur5e_1=["camera", "gripper"], ur5e_2=["gripper"])
-    default_settings = frozendict({  # "type": "lazyrrg*",
+    default_settings = frozendict({
         "type": "rrt*",
         "bidirectional": False,
         "connectionThreshold": 30.0,
@@ -38,7 +44,7 @@ class AbstractMotionPlanner:
             collision, too low value may lead to slow planning. Default value is 1e-2.
         """
         self.eps = eps
-
+        self.objects = {}
         self.world = WorldModel()
         world_path = self._get_klampt_world_path()
         self.world.readFile(world_path)
@@ -55,6 +61,7 @@ class AbstractMotionPlanner:
         self.world_collider = collide.WorldCollider(self.world)
 
         self.settings = frozendict(self.default_settings)
+        self.held_objects = {robot_name: None for robot_name in self.robot_name_mapping}  # Track held objects
 
     def is_pyqt5_available(self):
         try:
@@ -81,8 +88,8 @@ class AbstractMotionPlanner:
             vis.createWindow(window_name)
 
         vis.add("world", self.world)
-        # vis.setColor(('world', 'ur5e_1'), 0, 1, 1)
-        # vis.setColor(('world', 'ur5e_2'), 0, 0, 0.5)
+        vis.setColor(('world', 'ur5e_1'), 0.8, 0.8, 0.8)
+        vis.setColor(('world', 'ur5e_2'), 0.8, 0.8, 0.8)
 
         # set camera position:
         viewport = vis.getViewport()
@@ -91,6 +98,8 @@ class AbstractMotionPlanner:
         viewport.camera.dist = 5
 
         vis.show()
+        time.sleep(0.2)
+
         AbstractMotionPlanner.vis_initialized = True
 
     def vis_config(self, robot_name, config_, vis_name="robot_config", rgba=(0, 0, 1, 0.5)):
@@ -150,11 +159,12 @@ class AbstractMotionPlanner:
         """
         plan from a start and a goal that are given in 6d configuration space
         """
-        start_config_klampt = self.config6d_to_klampt(start_config)
-        goal_config_klampt = self.config6d_to_klampt(goal_config)
+        if len(start_config) == 6 and len(goal_config) == 6:
+            start_config = self.config6d_to_klampt(start_config)
+            goal_config = self.config6d_to_klampt(goal_config)
 
         robot = self.robot_name_mapping[robot_name]
-        path = self._plan_from_start_to_goal_config_klampt(robot, start_config_klampt, goal_config_klampt,
+        path = self._plan_from_start_to_goal_config_klampt(robot, start_config, goal_config,
                                                            max_time, max_length_to_distance_ratio)
 
         return self.path_klampt_to_config6d(path)
@@ -300,7 +310,25 @@ class AbstractMotionPlanner:
 
     def get_forward_kinematics(self, robot_name, config):
         """
-        get the forward kinematics of the robot, this already returns the transform to world!
+        Calculates the forward kinematics for a specified robot and configuration.
+
+        This method computes the end-effector's pose (position and orientation) in
+        the world frame, given a robot's configuration. The configuration can be in
+        6D space or in the full configuration space of the robot.
+
+        Parameters:
+        robot_name: str
+            The name of the robot for which the kinematics is to be calculated.
+        config: list or array-like
+            The configuration of the robot. If the configuration's length is 6, it's
+            assumed to be in a simplified 6D space and will be transformed to the
+            full configuration space. Otherwise, it is assumed to already be in the
+            full configuration space.
+
+        Returns:
+        list
+            A 4x4 transformation matrix representing the position and orientation of
+            the end-effector in the world frame.
         """
         if len(config) == 6:
             config_klampt = self.config6d_to_klampt(config)
@@ -324,7 +352,38 @@ class AbstractMotionPlanner:
         # reset the robot config to update:
         robot.setConfig(robot.getConfig())
 
+    def ee_transform_from_point(self, point, orientation=None):
+        """
+        Returns the end-effector transformation matrix given a point and orientation.
+
+        Parameters:
+        robot_name (str): The name of the robot.
+        point (list or tuple): The 3D coordinates of the end-effector.
+        orientation (list or tuple, optional): The orientation of the end-effector in 3D space.
+
+        Returns:
+        list: A 4x4 transformation matrix representing the position and orientation of the end-effector.
+        """
+        if orientation is None:
+            orientation = so3.identity()
+        return [orientation, point]
+
     def ik_solve(self, robot_name, ee_transform, start_config=None):
+        """
+        Solves the inverse kinematics (IK) problem for a given robot and end-effector transform.
+
+        Parameters:
+        robot_name (str): Name of the robot for which the IK solution is to be computed.
+        ee_transform (list or tuple): Transform representing the desired position and orientation of the end-effector in 3D space.
+        start_config (list or tuple, optional): Optional starting configuration for the IK solver. It should be a list of 6 elements if provided.
+
+        Returns:
+        list: The computed configuration in 6D format that satisfies the IK constraints for the given end-effector transform.
+
+        Raises:
+        KeyError: If the provided robot_name is not found in the robot_name_mapping.
+        ValueError: If start_config is not None and does not contain exactly 6 elements.
+        """
 
         if start_config is not None and len(start_config) == 6:
             start_config = self.config6d_to_klampt(start_config)
@@ -350,6 +409,84 @@ class AbstractMotionPlanner:
         robot.setConfig(curr_config)
 
         return res_config
+
+
+    def add_object_to_world(self, name, item):
+        """
+        Add a new object to the world.
+        :param name: Name of the object.
+        :param item: Dictionary containing the following keys:
+            - geometry_file: Path to the object's geometry file.
+            - coordinates: [x, y, z] coordinates.
+            - angle: Rotation matrix (so3).
+            - color: Dictionary with 'name' and 'rgb' keys for the object's color (default is white).
+            - scale: Scaling factor of the object (default is 1,1,1).
+        """
+
+        obj = self.world.makeRigidObject(name)
+        geom = obj.geometry()
+        if not geom.loadFile(item["geometry_file"]):
+            raise ValueError(f"Failed to load geometry file: {item['geometry_file']}")
+
+        # Set the transformation (rotation + position)
+        if len(item["angle"]) != 9:
+            item["angle"] = so3.rotation(item["angle"], math.pi / 2)
+        transform = (item["angle"], item["coordinates"])
+        geom.setCurrentTransform(*transform)
+        if type(item["scale"]) is float or int:
+            geom.scale(item["scale"])
+        else:
+            geom.scale(*item["scale"])
+
+        # Set the transformation for the rigid object
+        obj.setTransform(*transform)
+
+        # Set the object's color
+        obj.appearance().setColor(*item["color"]["rgb"])
+
+        # Save the object in the dictionary
+        self.objects[name] = obj
+
+        return obj
+
+
+    def get_object(self, name):
+        """
+        Retrieve an object by name from the dictionary.
+        :param name: Name of the object.
+        :return: The object if found, otherwise None.
+        """
+        obj = self.objects.get(name)
+        if obj is None:
+            print(f"Object '{name}' not found.")
+        return obj
+
+    def remove_object(self, name, vis_state=False):
+        """
+        Remove an object from the world and the dictionary.
+        :param name: Name of the object to be removed.
+        :param vis_state: Boolean to visualize the workspace after removing the object.
+        """
+        if vis.shown():
+            vis_state = True
+            vis.show(False)
+            time.sleep(0.3)
+        self._remove_object(name)
+        if vis_state:
+            self.visualize(window_name="workspace")
+
+    def _remove_object(self, name):
+        """
+        Remove an object from the world and the dictionary.
+        :param name: Name of the object to be removed.
+        """
+        obj = self.objects.pop(name, None)  # Remove from the dictionary
+        if obj is None:
+            print(f"Object '{name}' not found. Cannot remove.")
+        else:
+            self.world.remove(obj)
+            print(f"Object '{name}' removed from the dictionary and world.")
+
 
     @abstractmethod
     def _get_klampt_world_path(self):
